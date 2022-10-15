@@ -1,5 +1,4 @@
 whitelist_rules:
-  - attributes
   - class_delegate_protocol
   - closing_brace
   - closure_end_indentation
