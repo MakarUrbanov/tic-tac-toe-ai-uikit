@@ -9,7 +9,6 @@ class MainNavigationController: UINavigationController {
   override init(rootViewController: UIViewController) {
     super.init(rootViewController: rootViewController)
 
-    view.frame = UIScreen.main.bounds
     isNavigationBarHidden = true
   }
 
