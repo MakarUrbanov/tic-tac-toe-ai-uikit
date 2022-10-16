@@ -9,11 +9,15 @@ import UIKit
 
 class GameConfigurationViewController: BaseViewController {
 
-  private let xMark = XMark()
+  private let marksStack = MarksView()
 
-  private func getXMarkSize() -> CGFloat {
-    view.bounds.width / 2
-  }
+  private let titleLabel: UILabel = {
+    let label = UILabel()
+    label.text = "Choose your play mode"
+    label.textColor = Colors.Text.primaryBlack
+    label.font = Fonts.helveticaBold(size: 25)
+    return label
+  }()
 
 }
 
@@ -22,24 +26,32 @@ extension GameConfigurationViewController {
   override func setViews() {
     super.setViews()
 
-    view.setView(xMark)
+    view.setView(marksStack)
+    view.setView(titleLabel)
   }
 
   override func setConstraints() {
     super.setConstraints()
 
     NSLayoutConstraint.activate([
-      xMark.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-      xMark.centerYAnchor.constraint(equalTo: view.centerYAnchor),
-      xMark.widthAnchor.constraint(equalToConstant: getXMarkSize()),
-      xMark.heightAnchor.constraint(equalToConstant: getXMarkSize())
+      marksStack.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+      marksStack.heightAnchor.constraint(equalToConstant: getMarksSize()),
+      marksStack.widthAnchor.constraint(equalToConstant: getMarksSize() * 1.85),
+      marksStack.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+
+      titleLabel.topAnchor.constraint(equalTo: marksStack.bottomAnchor),
+      titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor)
     ])
   }
 
   override func setAppearanceConfiguration() {
     super.setAppearanceConfiguration()
 
-    xMark.draw(width: getXMarkSize())
+    marksStack.drawMarks(marksSize: getMarksSize())
+  }
+
+  private func getMarksSize() -> CGFloat {
+    view.bounds.width / 2.4
   }
 
 }
