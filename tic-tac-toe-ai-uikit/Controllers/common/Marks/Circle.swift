@@ -36,7 +36,7 @@ final class Circle: BaseMark {
 
     let shadowLayer = getShadow(
       width: width,
-      colorFrom: Colors.Gradients.Circle.from.withAlphaComponent(0.6).cgColor,
+      colorFrom: Colors.Gradients.Circle.from.withAlphaComponent(0.4).cgColor,
       colorTo: Colors.Gradients.Circle.from.withAlphaComponent(0).cgColor
     )
 

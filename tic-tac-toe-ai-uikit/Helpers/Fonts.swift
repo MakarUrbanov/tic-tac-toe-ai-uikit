@@ -14,4 +14,8 @@ enum Fonts {
     UIFont(name: "Helvetica-Bold", size: size) ?? UIFont()
   }
 
+  static func helveticaSemiBold(size: CGFloat) -> UIFont {
+    UIFont(name: "Helvetica Neue Medium", size: size) ?? UIFont()
+  }
+
 }
