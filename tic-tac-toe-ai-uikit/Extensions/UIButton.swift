@@ -21,7 +21,7 @@ extension UIButton {
 
   @objc private func handlePressIn() {
     UIView.animate(withDuration: 0.05) {
-      self.titleLabel?.alpha = 0.1
+      self.titleLabel?.alpha = 0.5
     }
   }
 

@@ -99,6 +99,7 @@ extension GameConfigurationViewController {
     withAiButton.setButtonConfiguration(buttonWithAiConfiguration)
 
     withFriendButton.addTarget(self, action: #selector(withFriendButtonPressed), for: .touchUpInside)
+    withFriendButton.makeTitlePressable()
     let buttonWithFriendConfiguration = BaseRoundedButton.ButtonConfigurations.getWhiteButtonConfiguration()
     withFriendButton.setButtonConfiguration(buttonWithFriendConfiguration)
   }
