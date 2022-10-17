@@ -24,7 +24,7 @@ extension BaseRoundedButton {
     static func geBlueButtonConfiguration() -> Configuration {
       var configuration: Configuration = .filled()
       configuration.cornerStyle = .capsule
-      configuration.baseForegroundColor = .white
+      configuration.baseForegroundColor = Colors.white
       configuration.baseBackgroundColor = Colors.activeButton
       configuration.contentInsets = .init(top: 10, leading: 30, bottom: 10, trailing: 30)
       return configuration
@@ -33,7 +33,7 @@ extension BaseRoundedButton {
     static func getWhiteButtonConfiguration() -> Configuration {
       var configuration: Configuration = .filled()
       configuration.cornerStyle = .capsule
-      configuration.baseForegroundColor = Colors.Text.primaryBlack
+      configuration.baseForegroundColor = Colors.black
       configuration.baseBackgroundColor = .white
       configuration.contentInsets = .init(top: 10, leading: 30, bottom: 10, trailing: 30)
       return configuration
