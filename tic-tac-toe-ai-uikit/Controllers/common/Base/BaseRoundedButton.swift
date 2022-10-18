@@ -20,14 +20,6 @@ class BaseRoundedButton: BaseButton {
 
 extension BaseRoundedButton {
 
-  private func setDefaultShadow() {
-    layer.shadowColor = Colors.black.cgColor
-    layer.shadowOffset = CGSize(width: 0, height: 6)
-    layer.shadowOpacity = 0.2
-    layer.shadowRadius = 12
-    layer.masksToBounds = false
-  }
-
   func setButtonConfiguration(_ configuration: Configuration, withShadow: Bool = true) {
     self.configuration = configuration
     if withShadow {

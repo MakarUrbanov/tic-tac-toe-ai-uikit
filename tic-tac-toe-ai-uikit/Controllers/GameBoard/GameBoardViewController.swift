@@ -9,15 +9,12 @@ final class GameBoardViewController: BaseViewController {
   private let selectedMode: SelectedMode
   private let selectedSide: SelectedSide
 
-  private let titleLabel: UILabel = {
-    let label = UILabel()
-    label.text = "Pick your side"
-    return label
-  }()
+  private let gameBoard: GameBoard
 
   init(mode: SelectedMode, side: SelectedSide) {
     selectedMode = mode
     selectedSide = side
+    gameBoard = GameBoard(mode: mode)
 
     super.init(nibName: nil, bundle: nil)
   }
@@ -33,15 +30,17 @@ extension GameBoardViewController {
   override func setViews() {
     super.setViews()
 
-    view.setView(titleLabel)
+    view.setView(gameBoard)
   }
 
   override func setConstraints() {
     super.setConstraints()
 
     NSLayoutConstraint.activate([
-      titleLabel.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-      titleLabel.centerYAnchor.constraint(equalTo: view.centerYAnchor)
+      gameBoard.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+      gameBoard.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+      gameBoard.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+      gameBoard.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
     ])
   }
 

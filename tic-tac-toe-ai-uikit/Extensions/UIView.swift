@@ -30,3 +30,13 @@ extension UIView {
     }
   }
 }
+
+extension UIView {
+  func setDefaultShadow() {
+    layer.shadowColor = Colors.black.cgColor
+    layer.shadowOffset = CGSize(width: 0, height: 6)
+    layer.shadowOpacity = 0.2
+    layer.shadowRadius = 12
+    layer.masksToBounds = false
+  }
+}
