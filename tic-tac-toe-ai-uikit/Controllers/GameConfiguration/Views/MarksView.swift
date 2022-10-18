@@ -4,14 +4,20 @@
 
 import UIKit
 
-class MarksView: BaseView {
+class MarksView: BaseStackView {
 
-  private let cross = Cross()
-  private let circle = Circle()
+  private var cross = Cross(width: 100)
+  private var circle = Circle(width: 100)
 
   func drawMarks(marksSize: CGFloat) {
-    cross.draw(width: marksSize, withShadow: true)
-    circle.draw(width: marksSize, withShadow: true)
+    cross = Cross(width: marksSize)
+    circle = Circle(width: marksSize)
+
+    cross.draw()
+    circle.draw()
+
+    addArrangedSubview(cross)
+    addArrangedSubview(circle)
   }
 
 }
@@ -20,25 +26,16 @@ extension MarksView {
 
   override func setViews() {
     super.setViews()
-
-    setView(cross)
-    setView(circle)
   }
 
   override func setConstraints() {
     super.setConstraints()
-
-    NSLayoutConstraint.activate([
-      cross.centerYAnchor.constraint(equalTo: centerYAnchor),
-      cross.leadingAnchor.constraint(equalTo: leadingAnchor),
-
-      circle.centerYAnchor.constraint(equalTo: centerYAnchor),
-      circle.trailingAnchor.constraint(equalTo: trailingAnchor)
-    ])
   }
 
   override func setAppearanceConfiguration() {
     super.setAppearanceConfiguration()
+
+    setLayoutOptions(axis: .horizontal, distribution: .fillEqually, spacing: -30)
 
     cross.backgroundColor = .clear
     circle.backgroundColor = .clear

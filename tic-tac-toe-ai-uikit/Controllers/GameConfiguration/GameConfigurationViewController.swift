@@ -7,12 +7,16 @@
 
 import UIKit
 
-class GameConfigurationViewController: BaseViewController {
+final class GameConfigurationViewController: BaseViewController {
 
-  private let stackView = UIStackView()
+  private let stackView = BaseStackView()
 
   private let marksStack = MarksView()
-  private let titleLabel = UILabel()
+  private let titleLabel: UILabel = {
+    let label = UILabel()
+    label.text = "Choose your play mode"
+    return label
+  }()
 
   private let withAiButton = BaseRoundedButton(with: "With AI")
   private let withFriendButton = BaseRoundedButton(with: "With a friend")
@@ -26,12 +30,17 @@ class GameConfigurationViewController: BaseViewController {
 
 extension GameConfigurationViewController {
 
+  private func navigateToPickSideController(selectedMode: SelectedMode) {
+    let controller = PickSideViewController(selectedMode: selectedMode)
+    navigationController?.pushViewController(controller, animated: true)
+  }
+
   @objc private func withAiButtonPressed() {
-    print("pressed AI")
+    navigateToPickSideController(selectedMode: .ai)
   }
 
   @objc private func withFriendButtonPressed() {
-    print("pressed Friend")
+    navigateToPickSideController(selectedMode: .friend)
   }
 
 }
@@ -63,8 +72,6 @@ extension GameConfigurationViewController {
       stackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -verticalMargin),
       stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: verticalMargin),
 
-      marksStack.widthAnchor.constraint(equalToConstant: getMarksSize() * 1.85),
-
       titleLabel.topAnchor.constraint(equalTo: marksStack.bottomAnchor),
       titleLabel.centerXAnchor.constraint(equalTo: stackView.centerXAnchor),
 
@@ -76,22 +83,19 @@ extension GameConfigurationViewController {
 
       withFriendButton.topAnchor.constraint(equalTo: withAiButton.bottomAnchor, constant: verticalMargin / 3),
       withFriendButton.centerXAnchor.constraint(equalTo: buttonsWrapper.centerXAnchor),
-      withFriendButton.widthAnchor.constraint(equalToConstant: buttonsWidth),
+      withFriendButton.widthAnchor.constraint(equalToConstant: buttonsWidth)
     ])
   }
 
   override func setAppearanceConfiguration() {
     super.setAppearanceConfiguration()
 
-    stackView.alignment = .center
-    stackView.axis = .vertical
-    stackView.distribution = .fillEqually
+    stackView.setLayoutOptions(axis: .vertical)
 
     marksStack.drawMarks(marksSize: getMarksSize())
 
-    titleLabel.text = "Choose your play mode"
     titleLabel.textColor = Colors.Text.primaryBlack
-    titleLabel.font = Fonts.helveticaSemiBold(size: 22)
+    titleLabel.font = Fonts.title
     titleLabel.textAlignment = .center
 
     withAiButton.addTarget(self, action: #selector(withAiButtonPressed), for: .touchUpInside)

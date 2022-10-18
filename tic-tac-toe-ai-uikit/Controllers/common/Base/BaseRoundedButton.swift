@@ -48,9 +48,11 @@ extension BaseRoundedButton {
     layer.masksToBounds = false
   }
 
-  func setButtonConfiguration(_ configuration: Configuration, shadow: Bool = true) {
+  func setButtonConfiguration(_ configuration: Configuration, withShadow: Bool = true) {
     self.configuration = configuration
-    setDefaultShadow()
+    if withShadow {
+      setDefaultShadow()
+    }
   }
 }
 

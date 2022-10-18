@@ -4,14 +4,11 @@
 
 import UIKit
 
-final class Circle: BaseMark {
+final class Circle: BaseMark, DrawableMarkProtocol {
 
-  func draw(width: CGFloat, withShadow: Bool) {
-    let reductionValue = getReductionValue(frameWidth: width)
-    let lineWidth = getLineWidth(frameWidth: width)
-
-    let radius = width / 2 - (reductionValue * 1.1)
-    let circleCenter = CGPoint(x: width / 2, y: width / 2)
+  func draw() {
+    let radius = markerWidth / 2 - (reductionValue * 1.1)
+    let circleCenter = CGPoint(x: markerWidth / 2, y: markerWidth / 2)
     let circlePath = UIBezierPath(
       arcCenter: circleCenter,
       radius: radius,
@@ -28,14 +25,12 @@ final class Circle: BaseMark {
     circleLayer.lineCap = .round
 
     let gradientLayer = getGradient(
-      width: width,
       colorFrom: Colors.Gradients.Circle.from.cgColor,
       colorTo: Colors.Gradients.Circle.to.cgColor,
       on: circleLayer
     )
 
     let shadowLayer = getShadow(
-      width: width,
       colorFrom: Colors.Gradients.Circle.from.withAlphaComponent(0.4).cgColor,
       colorTo: Colors.Gradients.Circle.from.withAlphaComponent(0).cgColor
     )
@@ -45,7 +40,7 @@ final class Circle: BaseMark {
     }
     layer.addSublayer(gradientLayer)
 
-    setConstraintsConstant(width: width)
+    setConstraintsConstant(width: markerWidth)
   }
 
 }

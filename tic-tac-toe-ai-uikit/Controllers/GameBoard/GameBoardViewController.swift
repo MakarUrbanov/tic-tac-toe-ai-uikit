@@ -4,7 +4,7 @@
 
 import UIKit
 
-class GameBoardViewController: BaseViewController {
+final class GameBoardViewController: BaseViewController {
 
 }
 

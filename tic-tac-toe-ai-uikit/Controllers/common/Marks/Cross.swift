@@ -4,7 +4,48 @@
 
 import UIKit
 
-final class Cross: BaseMark {
+final class Cross: BaseMark, DrawableMarkProtocol {
+
+  func draw() {
+    let linesLayer = CAShapeLayer()
+
+    // Draw lines
+    let firstLineLayer = getLineLayer(
+      from: CGPoint(x: markerWidth - reductionValue, y: reductionValue),
+      to: CGPoint(x: reductionValue, y: markerWidth - reductionValue),
+      lineWidth: lineWidth
+    )
+    let secondLineLayer = getLineLayer(
+      from: CGPoint(x: reductionValue, y: reductionValue),
+      to: CGPoint(x: markerWidth - reductionValue, y: markerWidth - reductionValue),
+      lineWidth: lineWidth
+    )
+
+    linesLayer.addSublayer(firstLineLayer)
+    linesLayer.addSublayer(secondLineLayer)
+
+    let gradientLayer = getGradient(
+      colorFrom: Colors.Gradients.Cross.from.cgColor,
+      colorTo: Colors.Gradients.Cross.to.cgColor,
+      on: linesLayer
+    )
+
+    let shadowLayer = getShadow(
+      colorFrom: Colors.Gradients.Cross.from.withAlphaComponent(0.4).cgColor,
+      colorTo: Colors.Gradients.Cross.from.withAlphaComponent(0).cgColor
+    )
+
+    if withShadow {
+      layer.addSublayer(shadowLayer)
+    }
+    layer.addSublayer(gradientLayer)
+
+    setConstraintsConstant(width: markerWidth)
+  }
+
+}
+
+extension Cross {
 
   private func getLineLayer(from: CGPoint, to: CGPoint, lineWidth: CGFloat) -> CALayer {
     let linePath = UIBezierPath()
@@ -20,47 +61,6 @@ final class Cross: BaseMark {
     lineLayer.lineCap = .square
 
     return lineLayer
-  }
-
-  func draw(width: CGFloat, withShadow: Bool = false) {
-    let linesLayer = CAShapeLayer()
-    let reductionValue = getReductionValue(frameWidth: width)
-    let lineWidth = getLineWidth(frameWidth: width)
-
-    // Draw lines
-    let firstLineLayer = getLineLayer(
-      from: CGPoint(x: width - reductionValue, y: reductionValue),
-      to: CGPoint(x: reductionValue, y: width - reductionValue),
-      lineWidth: lineWidth
-    )
-    let secondLineLayer = getLineLayer(
-      from: CGPoint(x: reductionValue, y: reductionValue),
-      to: CGPoint(x: width - reductionValue, y: width - reductionValue),
-      lineWidth: lineWidth
-    )
-
-    linesLayer.addSublayer(firstLineLayer)
-    linesLayer.addSublayer(secondLineLayer)
-
-    let gradientLayer = getGradient(
-      width: width,
-      colorFrom: Colors.Gradients.Cross.from.cgColor,
-      colorTo: Colors.Gradients.Cross.to.cgColor,
-      on: linesLayer
-    )
-
-    let shadowLayer = getShadow(
-      width: width,
-      colorFrom: Colors.Gradients.Cross.from.withAlphaComponent(0.4).cgColor,
-      colorTo: Colors.Gradients.Cross.from.withAlphaComponent(0).cgColor
-    )
-
-    if withShadow {
-      layer.addSublayer(shadowLayer)
-    }
-    layer.addSublayer(gradientLayer)
-
-    setConstraintsConstant(width: width)
   }
 
 }
