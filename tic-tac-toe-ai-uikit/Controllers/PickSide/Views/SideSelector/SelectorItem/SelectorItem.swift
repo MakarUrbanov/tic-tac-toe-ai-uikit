@@ -49,10 +49,11 @@ extension SideSelector.SelectorItem {
     UIView.animate(
       withDuration: 0.5,
       delay: 0,
-      usingSpringWithDamping: 0.5,
+      usingSpringWithDamping: 3,
       initialSpringVelocity: 0,
       options: .allowUserInteraction) { [unowned self] in
       contentPlaceholder.0.transform = CGAffineTransformScale(.identity, 1.2, 1.2)
+      alpha = 1
     }
   }
 
@@ -61,10 +62,11 @@ extension SideSelector.SelectorItem {
     UIView.animate(
       withDuration: 0.5,
       delay: 0,
-      usingSpringWithDamping: 0.5,
+      usingSpringWithDamping: 3,
       initialSpringVelocity: 0,
       options: .allowUserInteraction) { [unowned self] in
       contentPlaceholder.0.transform = CGAffineTransformScale(.identity, 1, 1)
+      alpha = 0.3
     }
   }
 

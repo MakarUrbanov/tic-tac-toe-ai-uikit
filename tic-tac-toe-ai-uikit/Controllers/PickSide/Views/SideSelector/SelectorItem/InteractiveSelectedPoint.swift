@@ -68,7 +68,7 @@ extension InteractiveSelectedPoint {
   }
 
   private func getColor(_ isSelected: Bool) -> UIColor {
-    isSelected ? UIColor.white : UIColor.gray
+    isSelected ? Colors.activeButton : Colors.gray
   }
 
 }

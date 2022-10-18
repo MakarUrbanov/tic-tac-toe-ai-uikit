@@ -11,14 +11,15 @@ class SideSelector: BaseStackView {
   var selectedItem: SelectedSide = .cross
   var selectors: [SelectorItem] = []
 
+}
+
+extension SideSelector {
+
   func setContent(_ content: [SelectorContent], delegator: SelectItemProtocol) {
     let renderedContent = content.enumerated().map { (index, item) in
       let view = SelectorItem(content: item)
 
-      if index == 0 {
-        selectedItem = item.1
-        view.setItemActive()
-      }
+      setInitialActivityByIndex(index, of: view, withMode: item.1)
 
       view.onChangeSelectedItemDelegate = delegator
       view.onChangeSelectedSide = onChangeSelectedSide
@@ -29,15 +30,20 @@ class SideSelector: BaseStackView {
     renderContent()
   }
 
+  private func setInitialActivityByIndex(_ index: Int, of item: SelectorItem, withMode side: SelectedSide) {
+    if index == 0 {
+      selectedItem = side
+      item.setItemActive()
+    } else {
+      item.setItemInactive()
+    }
+  }
+
   private func renderContent() {
     selectors.forEach { view in
       addArrangedSubview(view)
     }
   }
-
-}
-
-extension SideSelector {
 
   func onChangeSelectedSide(origin: SelectorItem) {
     selectors.forEach { view in

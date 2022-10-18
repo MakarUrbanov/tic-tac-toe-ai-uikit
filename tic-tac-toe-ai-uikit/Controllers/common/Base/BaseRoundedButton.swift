@@ -20,26 +20,6 @@ class BaseRoundedButton: BaseButton {
 
 extension BaseRoundedButton {
 
-  enum ButtonConfigurations {
-    static func geBlueButtonConfiguration() -> Configuration {
-      var configuration: Configuration = .filled()
-      configuration.cornerStyle = .capsule
-      configuration.baseForegroundColor = Colors.white
-      configuration.baseBackgroundColor = Colors.activeButton
-      configuration.contentInsets = .init(top: 10, leading: 30, bottom: 10, trailing: 30)
-      return configuration
-    }
-
-    static func getWhiteButtonConfiguration() -> Configuration {
-      var configuration: Configuration = .filled()
-      configuration.cornerStyle = .capsule
-      configuration.baseForegroundColor = Colors.black
-      configuration.baseBackgroundColor = .white
-      configuration.contentInsets = .init(top: 10, leading: 30, bottom: 10, trailing: 30)
-      return configuration
-    }
-  }
-
   private func setDefaultShadow() {
     layer.shadowColor = Colors.black.cgColor
     layer.shadowOffset = CGSize(width: 0, height: 6)
@@ -54,6 +34,7 @@ extension BaseRoundedButton {
       setDefaultShadow()
     }
   }
+
 }
 
 extension BaseRoundedButton {

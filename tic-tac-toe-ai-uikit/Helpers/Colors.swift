@@ -6,9 +6,11 @@ import UIKit
 
 enum Colors {
 
-  static let background = UIColor(named: "background")
+  static let background = UIColor(named: "background") ?? UIColor()
+
   static let black = UIColor(hex: "#000000")
   static let white = UIColor(hex: "#FFFFFF")
+  static let gray = UIColor(hex: "#C6C8C8")
   static let activeButton = UIColor(hex: "#2f70f8")
 
   enum Gradients {

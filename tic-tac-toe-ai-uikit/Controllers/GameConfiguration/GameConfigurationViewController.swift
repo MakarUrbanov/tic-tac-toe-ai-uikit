@@ -99,13 +99,11 @@ extension GameConfigurationViewController {
     titleLabel.textAlignment = .center
 
     withAiButton.addTarget(self, action: #selector(withAiButtonPressed), for: .touchUpInside)
-    let buttonWithAiConfiguration = BaseRoundedButton.ButtonConfigurations.geBlueButtonConfiguration()
-    withAiButton.setButtonConfiguration(buttonWithAiConfiguration)
+    withAiButton.setButtonConfiguration(.DefaultRoundedButtonStyles.blueActionButton)
 
     withFriendButton.addTarget(self, action: #selector(withFriendButtonPressed), for: .touchUpInside)
     withFriendButton.makeTitlePressable()
-    let buttonWithFriendConfiguration = BaseRoundedButton.ButtonConfigurations.getWhiteButtonConfiguration()
-    withFriendButton.setButtonConfiguration(buttonWithFriendConfiguration)
+    withFriendButton.setButtonConfiguration(.DefaultRoundedButtonStyles.whiteButton)
   }
 
 }
