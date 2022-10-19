@@ -71,7 +71,7 @@ extension GameScore {
     playerName.textAlignment = .center
     playerName.font = Fonts.Custom.helveticaRegular(size: 24)
 
-    secondPlayerName.text = selectedMode == .ai ? "Ai" : "Friend"
+    secondPlayerName.text = selectedMode == .ai ? "AI" : "Friend"
     secondPlayerName.textColor = Colors.white
     secondPlayerName.textAlignment = .center
     secondPlayerName.font = Fonts.Custom.helveticaRegular(size: 24)

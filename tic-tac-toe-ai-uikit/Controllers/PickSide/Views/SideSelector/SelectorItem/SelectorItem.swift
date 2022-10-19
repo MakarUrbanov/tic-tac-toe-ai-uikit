@@ -35,9 +35,8 @@ extension SideSelector {
 
 extension SideSelector.SelectorItem {
 
-  override func onPressHandler(sender: UILongPressGestureRecognizer) {
-    super.onPressHandler(sender: sender)
-
+  override func viewPressed(sender: UILongPressGestureRecognizer, activeOpacity: CGFloat) {
+    super.viewPressed(sender: sender, activeOpacity: 0.2)
     if sender.state == .ended {
       onChangeSelectedItemDelegate?.onChangeSelectedSide(side: contentPlaceholder.1)
       onChangeSelectedSide?(self)
@@ -46,6 +45,9 @@ extension SideSelector.SelectorItem {
 
   func setItemActive() {
     selectedPoint.isSelectedHandler(true)
+    gestureRecognizers?.forEach {
+      $0.isEnabled = false
+    }
     UIView.animate(
       withDuration: 0.5,
       delay: 0,
@@ -59,6 +61,9 @@ extension SideSelector.SelectorItem {
 
   func setItemInactive() {
     selectedPoint.isSelectedHandler(false)
+    gestureRecognizers?.forEach {
+      $0.isEnabled = true
+    }
     UIView.animate(
       withDuration: 0.5,
       delay: 0,
