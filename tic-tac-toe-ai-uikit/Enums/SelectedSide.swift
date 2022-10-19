@@ -6,5 +6,5 @@ import UIKit
 
 enum SelectedSide: Int {
   case cross = 0
-  case circle = 1
+  case nought = 1
 }

@@ -19,7 +19,7 @@ enum Colors {
       static let to = UIColor(hex: "#8dffef")
     }
 
-    enum Circle {
+    enum Nought {
       static let from = UIColor(hex: "#f97033")
       static let to = UIColor(hex: "#f7df77")
     }

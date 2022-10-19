@@ -95,14 +95,14 @@ extension PickSideViewController {
     titleLabel.font = Fonts.title
 
     let crossContent = Cross(width: getContentItemSize())
-    let circleContent = Circle(width: getContentItemSize())
+    let noughtContent = Nought(width: getContentItemSize())
     crossContent.backgroundColor = .clear
     crossContent.draw()
-    circleContent.backgroundColor = .clear
-    circleContent.draw()
+    noughtContent.backgroundColor = .clear
+    noughtContent.draw()
     let cross = (crossContent, SelectedSide.cross)
-    let circle = (circleContent, SelectedSide.circle)
-    sideSelector.setContent([cross, circle], delegator: self)
+    let nought = (noughtContent, SelectedSide.nought)
+    sideSelector.setContent([cross, nought], delegator: self)
 
     buttonsStackView.setLayoutOptions(axis: .vertical, spacing: view.bounds.height * 0.03)
 
