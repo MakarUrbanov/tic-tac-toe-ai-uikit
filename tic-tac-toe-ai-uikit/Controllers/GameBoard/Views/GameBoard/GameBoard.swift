@@ -12,6 +12,7 @@ final class GameBoard: BaseView,
   let selectedGameMode: SelectedGameMode
   var whoseMove: SelectedSide
 
+  // UI
   let horizontalPadding: CGFloat = 10
   let boardPadding: CGFloat = 30
 

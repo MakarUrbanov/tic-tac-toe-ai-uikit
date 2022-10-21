@@ -11,13 +11,17 @@ class GameScore: BaseView {
   private let selectedMode: SelectedGameMode
 
   // UI
+  private var userInterfaceStyle: UIUserInterfaceStyle {
+    traitCollection.userInterfaceStyle
+  }
+
   private let gameScoreContainer = BaseView()
   private let gameScoreLabel = UILabel()
 
   private let playerName = UILabel()
+  private let playerNameColorInverted = UILabel()
   private let secondPlayerName = UILabel()
-
-  private let containerStackView = BaseStackView()
+  private let secondPlayerNameColorInverted = UILabel()
 
   private let selectorLine = BaseView()
 
@@ -39,20 +43,48 @@ extension GameScore {
     gameScoreLabel.text = "\(playerScore) - \(secondPlayerScore)"
   }
 
+  private func changeColorsBasedOnUserInterfaceStyle() {
+    let isDarkMode = userInterfaceStyle == .dark
+    gameScoreContainer.backgroundColor = isDarkMode ? Colors.white : Colors.activeButton
+    selectorLine.backgroundColor = isDarkMode ? Colors.white : Colors.activeButton
+
+    gameScoreLabel.textColor = isDarkMode ? Colors.black : Colors.white
+    playerName.textColor = isDarkMode ? Colors.white : Colors.black
+    playerNameColorInverted.textColor = isDarkMode ? Colors.black : Colors.white
+    secondPlayerName.textColor = isDarkMode ? Colors.white : Colors.black
+    secondPlayerNameColorInverted.textColor = isDarkMode ? Colors.black : Colors.white
+  }
+
+  override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+    super.traitCollectionDidChange(previousTraitCollection)
+    changeColorsBasedOnUserInterfaceStyle()
+  }
+
 }
 
 extension GameScore {
 
+  func setScore(_ firstPlayer: Int, _ secondsPlayer: Int) {
+    playerScore = firstPlayer
+    secondPlayerScore = secondsPlayer
+  }
+
   func changeTurn() {
-    let isPlayerMove = selectorLine.transform.tx == 0
+    let isFirstPlayerMove = selectorLine.transform.tx == 0
+    let yTranslate = isFirstPlayerMove ? secondPlayerName.frame.maxX - playerName.bounds.width : 0
 
     UIView.animate(
-      withDuration: 0.5, delay: 0, usingSpringWithDamping: 1, initialSpringVelocity: 0) { [self] in
-      selectorLine.transform = isPlayerMove
-      ? CGAffineTransformMakeTranslation(secondPlayerName.frame.maxX - playerName.bounds.width - 30, 0)
+      withDuration: 0.8, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0) { [self] in
+      selectorLine.transform = isFirstPlayerMove
+      ? CGAffineTransformMakeTranslation(yTranslate, 0)
       : CGAffineTransformMakeTranslation(0, 0)
-    }
 
+      selectorLine.subviews.forEach { (view: UIView) in
+        view.transform = isFirstPlayerMove
+        ? CGAffineTransformMakeTranslation(-yTranslate, 0)
+        : CGAffineTransformMakeTranslation(0, 0)
+      }
+    }
   }
 
 }
@@ -62,68 +94,88 @@ extension GameScore {
   override func setViews() {
     super.setViews()
 
-    setView(containerStackView)
-
-    containerStackView.addArrangedSubview(playerName)
+    setView(playerName)
 
     gameScoreContainer.setView(gameScoreLabel)
-    containerStackView.addArrangedSubview(gameScoreContainer)
+    setView(gameScoreContainer)
 
-    containerStackView.addArrangedSubview(secondPlayerName)
+    setView(secondPlayerName)
 
+    selectorLine.setView(playerNameColorInverted)
+    selectorLine.setView(secondPlayerNameColorInverted)
     setView(selectorLine)
   }
 
   override func setConstraints() {
     super.setConstraints()
 
-    print(frame, bounds)
-
     NSLayoutConstraint.activate([
-      containerStackView.widthAnchor.constraint(equalTo: widthAnchor),
-      containerStackView.topAnchor.constraint(equalTo: topAnchor),
-      containerStackView.trailingAnchor.constraint(equalTo: trailingAnchor),
-      containerStackView.bottomAnchor.constraint(equalTo: bottomAnchor),
+      playerName.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 1 / 3),
+      playerName.heightAnchor.constraint(equalToConstant: 40),
+      playerName.leadingAnchor.constraint(equalTo: leadingAnchor),
+      playerName.bottomAnchor.constraint(equalTo: bottomAnchor),
+      playerName.centerYAnchor.constraint(equalTo: centerYAnchor),
 
+      gameScoreContainer.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 1 / 3),
       gameScoreContainer.heightAnchor.constraint(equalToConstant: 40),
+      gameScoreContainer.bottomAnchor.constraint(equalTo: bottomAnchor),
+      gameScoreContainer.centerXAnchor.constraint(equalTo: centerXAnchor),
+      gameScoreContainer.centerYAnchor.constraint(equalTo: centerYAnchor),
 
       gameScoreLabel.centerXAnchor.constraint(equalTo: gameScoreContainer.centerXAnchor),
       gameScoreLabel.centerYAnchor.constraint(equalTo: gameScoreContainer.centerYAnchor),
 
-      selectorLine.widthAnchor.constraint(equalTo: playerName.widthAnchor, constant: 20),
-      selectorLine.leadingAnchor.constraint(equalTo: playerName.leadingAnchor, constant: 5),
+      secondPlayerName.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 1 / 3),
+      secondPlayerName.heightAnchor.constraint(equalToConstant: 40),
+      secondPlayerName.trailingAnchor.constraint(equalTo: trailingAnchor),
+      secondPlayerName.centerYAnchor.constraint(equalTo: centerYAnchor),
+
+      selectorLine.widthAnchor.constraint(equalTo: playerName.widthAnchor, multiplier: 0.8),
       selectorLine.heightAnchor.constraint(equalToConstant: 40),
-      selectorLine.centerYAnchor.constraint(equalTo: playerName.centerYAnchor)
+      selectorLine.centerXAnchor.constraint(equalTo: playerName.centerXAnchor),
+      selectorLine.centerYAnchor.constraint(equalTo: playerName.centerYAnchor),
+
+      playerNameColorInverted.centerXAnchor.constraint(equalTo: playerName.centerXAnchor),
+      playerNameColorInverted.centerYAnchor.constraint(equalTo: playerName.centerYAnchor),
+
+      secondPlayerNameColorInverted.centerXAnchor.constraint(equalTo: secondPlayerName.centerXAnchor),
+      secondPlayerNameColorInverted.centerYAnchor.constraint(equalTo: secondPlayerName.centerYAnchor)
     ])
   }
 
   override func setAppearanceConfiguration() {
     super.setAppearanceConfiguration()
 
-    containerStackView.setLayoutOptions(axis: .horizontal)
+    [playerName, playerNameColorInverted].forEach { (label: UILabel) in
+      label.text = "You"
+      label.textAlignment = .center
+      label.font = Fonts.Custom.helveticaRegular(size: 24)
+    }
+    playerName.layer.zPosition = 1
+    playerNameColorInverted.layer.zPosition = 2
 
-    playerName.text = "You"
-    playerName.textColor = Colors.Text.dynamicBlack
-    playerName.textAlignment = .center
-    playerName.font = Fonts.Custom.helveticaRegular(size: 24)
+    [secondPlayerName, secondPlayerNameColorInverted].forEach { (label: UILabel) in
+      label.text = selectedMode == .ai ? "AI" : "Friend"
+      label.textAlignment = .center
+      label.font = Fonts.Custom.helveticaRegular(size: 24)
+    }
+    secondPlayerName.layer.zPosition = 1
+    secondPlayerNameColorInverted.layer.zPosition = 2
 
-    secondPlayerName.text = selectedMode == .ai ? "AI" : "Friend"
-    secondPlayerName.textColor = Colors.Text.dynamicBlack
-    secondPlayerName.textAlignment = .center
-    secondPlayerName.font = Fonts.Custom.helveticaRegular(size: 24)
-
-    gameScoreContainer.backgroundColor = Colors.white
     gameScoreContainer.setDefaultShadow()
     gameScoreContainer.layer.cornerRadius = 14
+    gameScoreContainer.layer.zPosition = 4
 
     gameScoreLabel.text = "\(playerScore) - \(secondPlayerScore)"
     gameScoreLabel.font = Fonts.Custom.helveticaBold(size: 24)
     gameScoreLabel.textAlignment = .center
-    gameScoreLabel.textColor = Colors.black
 
-    selectorLine.backgroundColor = Colors.white
-    selectorLine.layer.zPosition = -1
+    selectorLine.layer.zPosition = 3
     selectorLine.layer.cornerRadius = 14
+    selectorLine.setDefaultShadow()
+    selectorLine.clipsToBounds = true
+
+    changeColorsBasedOnUserInterfaceStyle()
   }
 
 }
