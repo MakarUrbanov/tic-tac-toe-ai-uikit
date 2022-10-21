@@ -6,7 +6,7 @@ import UIKit
 
 final class PickSideViewController: BaseViewController {
 
-  private var selectedMode: SelectedMode
+  private var selectedMode: SelectedGameMode
   private var selectedSide: SelectedSide = SelectedSide.cross
 
   private let stackView = BaseStackView()
@@ -21,7 +21,7 @@ final class PickSideViewController: BaseViewController {
   private var continueButton = BaseRoundedButton(with: "Continue")
   private var goBackButton = BaseRoundedButton(with: "Go back")
 
-  init(selectedMode: SelectedMode) {
+  init(selectedMode: SelectedGameMode) {
     self.selectedMode = selectedMode
 
     super.init(nibName: nil, bundle: nil)
@@ -74,15 +74,14 @@ extension PickSideViewController {
     super.setConstraints()
 
     let verticalPadding = view.bounds.height * 0.1
-    let buttonsWidth = view.bounds.width / 2
 
     NSLayoutConstraint.activate([
       stackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: verticalPadding),
       stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
       stackView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
       stackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -verticalPadding),
-      continueButton.widthAnchor.constraint(equalToConstant: buttonsWidth),
-      goBackButton.widthAnchor.constraint(equalToConstant: buttonsWidth)
+      continueButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5),
+      goBackButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5)
     ])
   }
 
@@ -91,7 +90,7 @@ extension PickSideViewController {
 
     stackView.setLayoutOptions(axis: .vertical, distribution: .fill)
 
-    titleLabel.textColor = Colors.Text.primaryBlack
+    titleLabel.textColor = Colors.Text.dynamicBlack
     titleLabel.font = Fonts.title
 
     let crossContent = Cross(width: getContentItemSize())

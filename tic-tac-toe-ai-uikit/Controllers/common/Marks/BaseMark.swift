@@ -25,7 +25,7 @@ class BaseMark: UIView, BaseMarkProtocol {
     markerWidth * 0.7
   }
 
-  init(width: CGFloat, withShadow: Bool = true) {
+  required init(width: CGFloat, withShadow: Bool = true) {
     markerWidth = width
     self.withShadow = withShadow
 
@@ -76,6 +76,11 @@ extension BaseMark {
       widthAnchor.constraint(equalToConstant: width),
       heightAnchor.constraint(equalToConstant: width)
     ])
+  }
+
+  func setNewMarkerWidth(_ width: CGFloat) {
+    markerWidth = width
+    setConstraintsConstant(width: width)
   }
 
 }

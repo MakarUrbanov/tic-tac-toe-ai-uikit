@@ -13,9 +13,6 @@ class InteractiveSelectedPoint: BaseView {
   }
   private var size: CGFloat
   private let dot = UIView()
-  var dotSize: CGFloat {
-    size / 2.5
-  }
 
   init(size: CGFloat, isSelected: Bool = false) {
     self.isSelected = isSelected
@@ -90,8 +87,8 @@ extension InteractiveSelectedPoint {
 
       dot.centerXAnchor.constraint(equalTo: centerXAnchor),
       dot.centerYAnchor.constraint(equalTo: centerYAnchor),
-      dot.widthAnchor.constraint(equalToConstant: dotSize),
-      dot.heightAnchor.constraint(equalToConstant: dotSize)
+      dot.widthAnchor.constraint(equalTo: widthAnchor, multiplier: 0.4),
+      dot.heightAnchor.constraint(equalTo: widthAnchor, multiplier: 0.4)
     ])
   }
 
@@ -103,7 +100,7 @@ extension InteractiveSelectedPoint {
     layer.cornerRadius = size / 2
     backgroundColor = .clear
 
-    dot.layer.cornerRadius = dotSize / 2
+    dot.layer.cornerRadius = size * 0.4 / 2
     dot.backgroundColor = getColor(true)
     dot.isHidden = !isSelected
   }

@@ -30,7 +30,7 @@ final class GameConfigurationViewController: BaseViewController {
 
 extension GameConfigurationViewController {
 
-  private func navigateToPickSideController(selectedMode: SelectedMode) {
+  private func navigateToPickSideController(selectedMode: SelectedGameMode) {
     let controller = PickSideViewController(selectedMode: selectedMode)
     navigationController?.pushViewController(controller, animated: true)
   }
@@ -64,7 +64,6 @@ extension GameConfigurationViewController {
     super.setConstraints()
 
     let verticalMargin = view.bounds.height * 0.1
-    let buttonsWidth = view.bounds.width / 2
 
     NSLayoutConstraint.activate([
       stackView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
@@ -79,11 +78,11 @@ extension GameConfigurationViewController {
       buttonsWrapper.trailingAnchor.constraint(equalTo: stackView.trailingAnchor),
 
       withAiButton.centerXAnchor.constraint(equalTo: buttonsWrapper.centerXAnchor),
-      withAiButton.widthAnchor.constraint(equalToConstant: buttonsWidth),
+      withAiButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5),
 
       withFriendButton.topAnchor.constraint(equalTo: withAiButton.bottomAnchor, constant: verticalMargin / 3),
       withFriendButton.centerXAnchor.constraint(equalTo: buttonsWrapper.centerXAnchor),
-      withFriendButton.widthAnchor.constraint(equalToConstant: buttonsWidth)
+      withFriendButton.widthAnchor.constraint(equalTo: view.widthAnchor, multiplier: 0.5)
     ])
   }
 
@@ -94,7 +93,7 @@ extension GameConfigurationViewController {
 
     marksStack.drawMarks(marksSize: getMarksSize())
 
-    titleLabel.textColor = Colors.Text.primaryBlack
+    titleLabel.textColor = Colors.Text.dynamicBlack
     titleLabel.font = Fonts.title
     titleLabel.textAlignment = .center
 

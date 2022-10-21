@@ -6,15 +6,15 @@ import UIKit
 
 final class GameBoardViewController: BaseViewController {
 
-  private let selectedMode: SelectedMode
+  private let selectedMode: SelectedGameMode
   private let selectedSide: SelectedSide
 
   private let gameBoard: GameBoard
 
-  init(mode: SelectedMode, side: SelectedSide) {
+  init(mode: SelectedGameMode, side: SelectedSide) {
     selectedMode = mode
     selectedSide = side
-    gameBoard = GameBoard(mode: mode)
+    gameBoard = GameBoard(mode: mode, side: side)
 
     super.init(nibName: nil, bundle: nil)
   }
@@ -36,11 +36,13 @@ extension GameBoardViewController {
   override func setConstraints() {
     super.setConstraints()
 
+    let paddingVertical = view.frame.height * 0.1
+
     NSLayoutConstraint.activate([
       gameBoard.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-      gameBoard.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+      gameBoard.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: paddingVertical),
       gameBoard.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-      gameBoard.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+      gameBoard.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -paddingVertical)
     ])
   }
 

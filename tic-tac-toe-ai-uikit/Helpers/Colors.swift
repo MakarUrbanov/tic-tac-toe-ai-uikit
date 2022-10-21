@@ -26,7 +26,7 @@ enum Colors {
   }
 
   enum Text {
-    static let primaryBlack = UIColor(named: "primaryBlack")
+    static let dynamicBlack = UIColor(named: "dynamicBlack")
   }
 
 }

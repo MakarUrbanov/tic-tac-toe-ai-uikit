@@ -52,7 +52,6 @@ whitelist_rules:
   - shorthand_operator
   - statement_position
   - syntactic_sugar
-  - todo
   - toggle_bool
   - trailing_comma
   - trailing_newline
