@@ -9,8 +9,16 @@ final class GameBoard: BaseView,
   UICollectionViewDataSource,
   UICollectionViewDelegateFlowLayout {
 
-  let selectedGameMode: SelectedGameMode
-  var whoseMove: SelectedSide
+  enum CurrentMoveFor {
+    case firstPlayer, secondPlayer
+  }
+
+  let isGameWithAi: Bool
+  var selectedFirstPlayerSide: SelectedSide
+  var currentMoveFor: CurrentMoveFor = .firstPlayer
+  var playerMoves: [Int] = [] { didSet { checkGameOverHandler() } }
+  var secondPlayerMoves: [Int] = [] { didSet { checkGameOverHandler() } }
+  let winPositions = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]
 
   // UI
   let horizontalPadding: CGFloat = 10
@@ -23,8 +31,8 @@ final class GameBoard: BaseView,
 
   init(mode: SelectedGameMode, side: SelectedSide) {
     gameScore = GameScore(mode: mode)
-    selectedGameMode = mode
-    whoseMove = side
+    isGameWithAi = mode == .ai
+    selectedFirstPlayerSide = side
 
     super.init(frame: .zero)
   }
@@ -33,37 +41,161 @@ final class GameBoard: BaseView,
     fatalError("init(coder:) has not been implemented")
   }
 
-  override func layoutSubviews() {
-    super.layoutSubviews()
-    gameScore.frame = bounds
-  }
 }
 
 extension GameBoard {
-  func onCrossPressed(cell: BoardCell?, indexPath: IndexPath) {
-    cell?.setMark(.cross)
+
+  private func setPlayerMove(indexPath: IndexPath) {
+    let cell = board.cellForItem(at: indexPath) as? BoardCell
+    let mark: BoardCellState = selectedFirstPlayerSide == .cross ? .cross : .nought
+    cell?.setMark(mark)
+    let moveIndex = indexPath.row + indexPath.section * 3
+    playerMoves.append(moveIndex)
   }
 
-  func onNoughtPressed(cell: BoardCell?, indexPath: IndexPath) {
-    cell?.setMark(.nought)
+  private func setSecondPlayerMove(indexPath: IndexPath) {
+    let cell = board.cellForItem(at: indexPath) as? BoardCell
+    let mark: BoardCellState = selectedFirstPlayerSide == .cross ? .nought : .cross
+    cell?.setMark(mark)
+    let moveIndex = indexPath.row + indexPath.section * 3
+    secondPlayerMoves.append(moveIndex)
+  }
+
+  private func setNextMoveOptions() {
+    gameScore.changeTurn()
+    currentMoveFor = currentMoveFor == .firstPlayer ? .secondPlayer : .firstPlayer
+  }
+
+  private func getIndexPathFromInt(_ position: Int) -> IndexPath {
+    let row = position % 3
+    let section = position / 3
+    return IndexPath(row: row, section: section)
+  }
+
+  private func getAiMoveForDefense() -> Int? {
+    let composedMoves = playerMoves + secondPlayerMoves
+
+    let lastChanceMovePositions = winPositions
+    .filter { positions in
+      Set(positions).subtracting(Set(composedMoves)).count == 1
+    }
+
+    let winningPositions = lastChanceMovePositions
+    .first(where: { positions in
+      Set(positions).subtracting(Set(secondPlayerMoves)).count == 3
+    })
+
+    return Set(winningPositions ?? playerMoves).subtracting(Set(playerMoves)).first
+  }
+
+  private func getAiMove() -> (Bool, Int?) {
+    let availablePositions = winPositions.filter { positions in
+      Set(positions).subtracting(Set(playerMoves)).count == 3
+    }
+
+    let winningPositions = availablePositions
+    .first(where: { positions in
+      Set(positions).subtracting(Set(secondPlayerMoves)).count < 2
+    })
+
+    let goodPositions = availablePositions
+    .first(where: { positions in
+      Set(positions).subtracting(Set(secondPlayerMoves)).count == 2
+    })
+
+    let emptyAvailableCells = [Array(Set(winPositions.joined()).subtracting(Set(playerMoves + secondPlayerMoves)))]
+    let randomPositions = availablePositions.isEmpty
+                          ? emptyAvailableCells[Int.random(in: 0...emptyAvailableCells.count - 1)]
+                          : availablePositions[Int.random(in: 0...availablePositions.count - 1)]
+
+    let isWinningMove = winningPositions != nil
+    let move = Set(winningPositions ?? goodPositions ?? randomPositions).subtracting(Set(secondPlayerMoves)).first
+
+    return (isWinningMove, move)
+  }
+
+  private func onAiMove() {
+    let aiThinkingTime = Double.random(in: 0.8...2)
+
+    DispatchQueue.main.asyncAfter(deadline: .now() + aiThinkingTime) { [self] in
+      let composedMoves = playerMoves + secondPlayerMoves
+      setNextMoveOptions()
+
+      // check is center cell occupied
+      let isCenterCellOccupied = composedMoves.contains(where: { (move: Int) in
+        move == 4
+      })
+      if !isCenterCellOccupied {
+        setSecondPlayerMove(indexPath: getIndexPathFromInt(4))
+        return
+      }
+
+      let (isWinningMove, move) = getAiMove()
+
+      // prevent defeat
+      if !isWinningMove, let defencePosition = getAiMoveForDefense() {
+        setSecondPlayerMove(indexPath: getIndexPathFromInt(defencePosition))
+
+        return
+      }
+
+      if let move = move {
+        setSecondPlayerMove(indexPath: getIndexPathFromInt(move))
+      }
+    }
+  }
+
+  private func onFirstPlayerMove(indexPath: IndexPath) {
+    setPlayerMove(indexPath: indexPath)
+    setNextMoveOptions()
+
+    if isGameWithAi {
+      onAiMove()
+    }
+  }
+
+  private func onSecondPlayerMove(indexPath: IndexPath) {
+    if isGameWithAi {
+      return
+    }
+
+    setSecondPlayerMove(indexPath: indexPath)
+    setNextMoveOptions()
   }
 
   func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
     let cell = board.cellForItem(at: indexPath) as? BoardCell
 
-    if cell?.state == .empty {
-      switch whoseMove {
-        case .cross:
-          onCrossPressed(cell: cell, indexPath: indexPath)
-          whoseMove = .nought
-        case .nought:
-          onNoughtPressed(cell: cell, indexPath: indexPath)
-          whoseMove = .cross
-      }
+    guard cell?.state == .empty else {
+      return
+    }
 
-      gameScore.changeTurn()
+    switch currentMoveFor {
+      case .firstPlayer:
+        onFirstPlayerMove(indexPath: indexPath)
+      case .secondPlayer:
+        onSecondPlayerMove(indexPath: indexPath)
     }
   }
+
+  private func checkGameOverHandler() {
+    print(secondPlayerMoves)
+    let isGameOver = winPositions.first { positions in
+      Set(positions).subtracting(Set(secondPlayerMoves)).isEmpty
+    }
+
+    if isGameOver != nil {
+      print("GAME OVER") // TODO mmk
+      //let alert = UIAlertController(title: "My Alert", message: "This is an alert.", preferredStyle: .alert)
+      //alert.addAction(
+      //  UIAlertAction(title: NSLocalizedString("Restart", comment: "Default action"), style: .default, handler: { _ in
+      //    NSLog("The \"OK\" alert occured.")
+      //  })
+      //)
+      //viewController?.present(alert, animated: true, completion: nil)
+    }
+  }
+
 }
 
 extension GameBoard {

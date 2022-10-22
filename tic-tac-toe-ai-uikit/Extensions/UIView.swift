@@ -42,4 +42,15 @@ extension UIView {
     layer.shadowRadius = 12
     layer.masksToBounds = false
   }
+
+  func getCurrentViewController() -> UIViewController? {
+    if let rootController = UIApplication.shared.keyWindow?.rootViewController {
+      var currentController: UIViewController! = rootController
+      while currentController.presentedViewController != nil {
+        currentController = currentController.presentedViewController
+      }
+      return currentController
+    }
+    return nil
+  }
 }
