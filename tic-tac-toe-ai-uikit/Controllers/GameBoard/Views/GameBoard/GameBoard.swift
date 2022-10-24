@@ -9,21 +9,19 @@ final class GameBoard: BaseView,
   UICollectionViewDataSource,
   UICollectionViewDelegateFlowLayout {
 
-  enum CurrentMoveFor {
+  private enum CurrentMoveFor {
     case firstPlayer, secondPlayer
   }
 
-  let isGameWithAi: Bool
-  var selectedFirstPlayerSide: SelectedSide
-  var currentMoveFor: CurrentMoveFor = .firstPlayer
-  var playerMoves: [Int] = [] { didSet { checkGameOverHandler() } }
-  var secondPlayerMoves: [Int] = [] { didSet { checkGameOverHandler() } }
-  let winPositions = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]
+  private let isGameWithAi: Bool
+  private let WIN_POSITIONS = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]
+  private let selectedFirstPlayerSide: SelectedSide
+  private var currentMoveFor: CurrentMoveFor = .firstPlayer
+  private var playerMoves: [Int] = [] { didSet { checkGameOverHandler() } }
+  private var secondPlayerMoves: [Int] = [] { didSet { checkGameOverHandler() } }
+  private var isGameOver = false
 
   // UI
-  let horizontalPadding: CGFloat = 10
-  let boardPadding: CGFloat = 30
-
   private let containerView = BaseView()
   private let gameScore: GameScore
   private let boardContainerView = BaseView()
@@ -75,7 +73,7 @@ extension GameBoard {
   private func getAiMoveForDefense() -> Int? {
     let composedMoves = playerMoves + secondPlayerMoves
 
-    let lastChanceMovePositions = winPositions
+    let lastChanceMovePositions = WIN_POSITIONS
     .filter { positions in
       Set(positions).subtracting(Set(composedMoves)).count == 1
     }
@@ -89,7 +87,7 @@ extension GameBoard {
   }
 
   private func getAiMove() -> (Bool, Int?) {
-    let availablePositions = winPositions.filter { positions in
+    let availablePositions = WIN_POSITIONS.filter { positions in
       Set(positions).subtracting(Set(playerMoves)).count == 3
     }
 
@@ -103,7 +101,7 @@ extension GameBoard {
       Set(positions).subtracting(Set(secondPlayerMoves)).count == 2
     })
 
-    let emptyAvailableCells = [Array(Set(winPositions.joined()).subtracting(Set(playerMoves + secondPlayerMoves)))]
+    let emptyAvailableCells = [Array(Set(WIN_POSITIONS.joined()).subtracting(Set(playerMoves + secondPlayerMoves)))]
     let randomPositions = availablePositions.isEmpty
                           ? emptyAvailableCells[Int.random(in: 0...emptyAvailableCells.count - 1)]
                           : availablePositions[Int.random(in: 0...availablePositions.count - 1)]
@@ -115,7 +113,7 @@ extension GameBoard {
   }
 
   private func onAiMove() {
-    let aiThinkingTime = Double.random(in: 0.8...2)
+    let aiThinkingTime = Double.random(in: 0.4...1.2)
 
     DispatchQueue.main.asyncAfter(deadline: .now() + aiThinkingTime) { [self] in
       let composedMoves = playerMoves + secondPlayerMoves
@@ -147,9 +145,14 @@ extension GameBoard {
 
   private func onFirstPlayerMove(indexPath: IndexPath) {
     setPlayerMove(indexPath: indexPath)
-    setNextMoveOptions()
 
-    if isGameWithAi {
+    let isDraw = (playerMoves + secondPlayerMoves).count == 9
+
+    if !isDraw {
+      setNextMoveOptions()
+    }
+
+    if isGameWithAi && !isDraw && !isGameOver {
       onAiMove()
     }
   }
@@ -166,7 +169,7 @@ extension GameBoard {
   func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
     let cell = board.cellForItem(at: indexPath) as? BoardCell
 
-    guard cell?.state == .empty else {
+    guard cell?.state == .empty && !isGameOver else {
       return
     }
 
@@ -178,21 +181,60 @@ extension GameBoard {
     }
   }
 
-  private func checkGameOverHandler() {
-    print(secondPlayerMoves)
-    let isGameOver = winPositions.first { positions in
-      Set(positions).subtracting(Set(secondPlayerMoves)).isEmpty
-    }
+  private func restartGame() {
+    currentMoveFor = .firstPlayer
+    playerMoves = []
+    secondPlayerMoves = []
+    isGameOver = false
+    board.refreshCells()
+    gameScore.changeTurn(.firstPlayer)
+  }
 
-    if isGameOver != nil {
-      print("GAME OVER") // TODO mmk
-      //let alert = UIAlertController(title: "My Alert", message: "This is an alert.", preferredStyle: .alert)
-      //alert.addAction(
-      //  UIAlertAction(title: NSLocalizedString("Restart", comment: "Default action"), style: .default, handler: { _ in
-      //    NSLog("The \"OK\" alert occured.")
-      //  })
-      //)
-      //viewController?.present(alert, animated: true, completion: nil)
+  private enum WhoWon {
+    case player, secondPlayer, draw
+  }
+
+  private func getAlertMessage(whoWon: WhoWon) -> String {
+    switch whoWon {
+      case .player:
+        return "You have won\nCongratulations"
+      case .secondPlayer:
+        return isGameWithAi ? "Ai have won\nGood luck in the next game!" : "Your friend have won\nCongratulations"
+      case .draw:
+        return "Draw!"
+    }
+  }
+
+  private func invokeAlert(whoWon: WhoWon) {
+    let message = getAlertMessage(whoWon: whoWon)
+    let alert = AlertManager(title: "Game Over", message: message)
+    .addActionButton(title: "Restart", style: .default) { [unowned self] _ in
+      restartGame()
+    }
+    let viewController = getCurrentViewController()
+    viewController?.present(alert, animated: true, completion: nil)
+  }
+
+  private func setNewScore(whoWon: WhoWon) {
+    let playerScore = gameScore.playerScore + (whoWon == .player ? 1 : 0)
+    let secondPlayerScore = gameScore.secondPlayerScore + (whoWon == .secondPlayer ? 1 : 0)
+    gameScore.setScore(playerScore, secondPlayerScore)
+  }
+
+  private func checkGameOverHandler() {
+    let isPlayerWon = WIN_POSITIONS.first { positions in
+      Set(positions).subtracting(Set(playerMoves)).isEmpty
+    } != nil
+    let isSecondPlayerWon = WIN_POSITIONS.first { positions in
+      Set(positions).subtracting(Set(secondPlayerMoves)).isEmpty
+    } != nil
+    let isDraw = (playerMoves + secondPlayerMoves).count == 9
+
+    if (isPlayerWon || isSecondPlayerWon || isDraw) && !isGameOver {
+      isGameOver = true
+      let whoWon: WhoWon = isPlayerWon ? .player : isSecondPlayerWon ? .secondPlayer : .draw
+      invokeAlert(whoWon: whoWon)
+      setNewScore(whoWon: whoWon)
     }
   }
 
@@ -201,8 +243,8 @@ extension GameBoard {
 extension GameBoard {
   private func getCellSize() -> CGSize {
     CGSize(
-      width: frame.width / 3 - horizontalPadding / 1.5 - boardPadding / 1.5,
-      height: frame.width / 3 - horizontalPadding / 1.5 - boardPadding / 1.5
+      width: board.bounds.width / 3,
+      height: board.bounds.width / 3
     )
   }
 
@@ -258,6 +300,9 @@ extension GameBoard {
 
   override func setConstraints() {
     super.setConstraints()
+
+    let horizontalPadding: CGFloat = 10
+    let boardPadding: CGFloat = 30
 
     NSLayoutConstraint.activate([
       containerView.centerXAnchor.constraint(equalTo: centerXAnchor),

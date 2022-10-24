@@ -18,8 +18,9 @@ class Board: UICollectionView {
   }
 
   override func layoutSubviews() {
+    super.layoutSubviews()
+
     if !isGridSet {
-      super.layoutSubviews()
       grid.setNewMarkerWidth(bounds.width)
       grid.draw()
 
@@ -29,6 +30,11 @@ class Board: UICollectionView {
 
   required init?(coder: NSCoder) {
     fatalError()
+  }
+
+  func refreshCells() {
+    let cells = visibleCells as? [BoardCell]
+    cells?.forEach { $0.refreshCell() }
   }
 
 }
@@ -48,6 +54,7 @@ extension Board {
 
   func setAppearanceConfiguration() {
     grid.isUserInteractionEnabled = false
+    layer.masksToBounds = false
   }
 
 }

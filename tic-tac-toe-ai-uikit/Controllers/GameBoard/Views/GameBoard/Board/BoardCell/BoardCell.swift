@@ -33,8 +33,20 @@ extension BoardCell {
   private func drawMark(_ mark: DrawableMarkProtocol.Type) {
     let markInstance = mark.init(width: bounds.width * 0.8, withShadow: true)
     markInstance.draw()
+    markInstance.transform = CGAffineTransformScale(.identity, 2, 2)
+    markInstance.alpha = 0
     setView(markInstance)
     setMarkConstraints(markInstance)
+    UIView.animate(
+      withDuration: 0.8,
+      delay: 0,
+      usingSpringWithDamping: 0.8,
+      initialSpringVelocity: 0,
+      options: .allowUserInteraction
+    ) {
+      markInstance.transform = CGAffineTransformScale(.identity, 1, 1)
+      markInstance.alpha = 1
+    }
   }
 
   private func getCrossMark() -> DrawableMarkProtocol {
@@ -60,5 +72,10 @@ extension BoardCell {
       case .empty:
         state = .empty
     }
+  }
+
+  func refreshCell() {
+    state = .empty
+    subviews.forEach { $0.removeFromSuperview() }
   }
 }

@@ -6,8 +6,8 @@ import UIKit
 
 class GameScore: BaseView {
 
-  private var playerScore = 0 { didSet { scoresChanged() } }
-  private var secondPlayerScore = 0 { didSet { scoresChanged() } }
+  private(set) var playerScore = 0 { didSet { scoresChanged() } }
+  private(set) var secondPlayerScore = 0 { didSet { scoresChanged() } }
   private let selectedMode: SelectedGameMode
 
   // UI
@@ -69,18 +69,22 @@ extension GameScore {
     secondPlayerScore = secondsPlayer
   }
 
-  func changeTurn() {
-    let isFirstPlayerMove = selectorLine.transform.tx == 0
-    let yTranslate = isFirstPlayerMove ? secondPlayerName.frame.maxX - playerName.bounds.width : 0
+  enum WhoseTurn {
+    case firstPlayer, secondsPlayer
+  }
+
+  func changeTurn(_ whosoTurn: WhoseTurn? = nil) {
+    let isSecondPlayerMove = whosoTurn != nil ? whosoTurn == .secondsPlayer : selectorLine.transform.tx == 0
+    let yTranslate = isSecondPlayerMove ? secondPlayerName.frame.maxX - playerName.bounds.width : 0
 
     UIView.animate(
       withDuration: 0.8, delay: 0, usingSpringWithDamping: 0.8, initialSpringVelocity: 0) { [self] in
-      selectorLine.transform = isFirstPlayerMove
+      selectorLine.transform = isSecondPlayerMove
       ? CGAffineTransformMakeTranslation(yTranslate, 0)
       : CGAffineTransformMakeTranslation(0, 0)
 
       selectorLine.subviews.forEach { (view: UIView) in
-        view.transform = isFirstPlayerMove
+        view.transform = isSecondPlayerMove
         ? CGAffineTransformMakeTranslation(-yTranslate, 0)
         : CGAffineTransformMakeTranslation(0, 0)
       }
