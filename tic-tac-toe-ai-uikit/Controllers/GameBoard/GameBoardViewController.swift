@@ -36,13 +36,11 @@ extension GameBoardViewController {
   override func setConstraints() {
     super.setConstraints()
 
-    let paddingVertical = view.frame.height * 0.1
-
     NSLayoutConstraint.activate([
       gameBoard.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-      gameBoard.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: paddingVertical),
+      gameBoard.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
       gameBoard.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-      gameBoard.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -paddingVertical)
+      gameBoard.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
     ])
   }
 

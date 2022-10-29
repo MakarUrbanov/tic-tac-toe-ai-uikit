@@ -16,6 +16,7 @@ final class GameBoard: BaseView,
   private let gameScore: GameScore
   private let boardContainerView = BaseView()
   private let board = Board(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
+  private let gameOverMessage = GameOverMessage()
 
   init(mode: SelectedGameMode, side: SelectedSide) {
     gameScore = GameScore(mode: mode)
@@ -27,6 +28,7 @@ final class GameBoard: BaseView,
     )
 
     super.init(frame: .zero)
+    gameManager.gameOverDelegate = self
   }
 
   required init(coder: NSCoder) {
@@ -43,6 +45,22 @@ final class GameBoard: BaseView,
     gameManager.cellPressed(indexPath: indexPath)
   }
 
+}
+
+extension GameBoard: GameOverProtocol {
+  func setIsRestartGameButtonHidden(_ hidden: Bool) {
+    gameOverMessage.isHidden = hidden
+  }
+
+  func setGameOver(message: String) {
+    setIsRestartGameButtonHidden(false)
+    gameOverMessage.setMessage(message)
+  }
+
+  @objc func restartGame() {
+    setIsRestartGameButtonHidden(true)
+    gameManager.restartGame()
+  }
 }
 
 extension GameBoard {
@@ -101,6 +119,8 @@ extension GameBoard {
 
     boardContainerView.setView(board)
     containerView.setView(boardContainerView)
+
+    setView(gameOverMessage)
   }
 
   override func setConstraints() {
@@ -128,7 +148,11 @@ extension GameBoard {
       board.topAnchor.constraint(equalTo: boardContainerView.topAnchor, constant: boardPadding),
       board.bottomAnchor.constraint(equalTo: boardContainerView.bottomAnchor, constant: -boardPadding),
       board.centerXAnchor.constraint(equalTo: boardContainerView.centerXAnchor),
-      board.centerYAnchor.constraint(equalTo: boardContainerView.centerYAnchor)
+      board.centerYAnchor.constraint(equalTo: boardContainerView.centerYAnchor),
+
+      gameOverMessage.widthAnchor.constraint(equalTo: widthAnchor),
+      gameOverMessage.topAnchor.constraint(equalTo: boardContainerView.bottomAnchor, constant: 16),
+      gameOverMessage.bottomAnchor.constraint(equalTo: bottomAnchor)
     ])
   }
 
@@ -144,6 +168,9 @@ extension GameBoard {
     board.delegate = self
     board.dataSource = self
     board.isScrollEnabled = false
+
+    gameOverMessage.addButtonTarget(self, actions: #selector(restartGame))
+    gameOverMessage.isHidden = true
   }
 
 }

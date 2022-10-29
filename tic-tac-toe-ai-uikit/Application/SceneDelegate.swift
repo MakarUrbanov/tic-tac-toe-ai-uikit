@@ -21,10 +21,10 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     window = UIWindow(frame: windowScene.screen.bounds)
     window?.windowScene = windowScene
-    let rootNavigationController = MainNavigationController(rootViewController: GameConfigurationViewController())
-    //    let rootNavigationController = MainNavigationController(
-    //      rootViewController: GameBoardViewController(mode: .ai, side: .cross)
-    //    ) // TODO mmk remove
+    //let rootNavigationController = MainNavigationController(rootViewController: GameConfigurationViewController())
+    let rootNavigationController = MainNavigationController(
+      rootViewController: GameBoardViewController(mode: .ai, side: .cross)
+    ) // TODO mmk remove
     window?.rootViewController = rootNavigationController
     window?.makeKeyAndVisible()
   }

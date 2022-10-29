@@ -4,6 +4,10 @@
 
 import UIKit
 
+protocol GameOverProtocol: AnyObject {
+  func setGameOver(message: String)
+}
+
 final class GameManager: PlayersMovesProtocol {
   private let gameAi = AIOfGame()
   private let selectedFirstPlayerSide: SelectedSide
@@ -15,6 +19,8 @@ final class GameManager: PlayersMovesProtocol {
   var aiMoves: [Int] = [] { didSet { checkGameOverHandler() } }
   var isGameOver = false
   let isGameWithAi: Bool
+
+  weak var gameOverDelegate: GameOverProtocol?
 
   init(
     isGameWithAi: Bool,
@@ -37,6 +43,15 @@ final class GameManager: PlayersMovesProtocol {
       case .secondPlayer:
         onSecondPlayerMove(indexPath: indexPath)
     }
+  }
+
+  func restartGame() {
+    currentMoveFor = .firstPlayer
+    playerMoves = []
+    aiMoves = []
+    isGameOver = false
+    board.refreshCells()
+    gameScore.changeTurn(.firstPlayer)
   }
 
 }
@@ -89,15 +104,6 @@ extension GameManager { // MOVES
 }
 
 extension GameManager { // ON GAME OVER
-  private func restartGame() {
-    currentMoveFor = .firstPlayer
-    playerMoves = []
-    aiMoves = []
-    isGameOver = false
-    board.refreshCells()
-    gameScore.changeTurn(.firstPlayer)
-  }
-
   private func setNewScore(winner: Winner) {
     let playerScore = gameScore.playerScore + (winner == .player ? 1 : 0)
     let secondPlayerScore = gameScore.secondPlayerScore + (winner == .secondPlayer ? 1 : 0)
@@ -114,6 +120,7 @@ extension GameManager { // ON GAME OVER
     if !isGameOver, let whoWon = winner {
       isGameOver = true
       setNewScore(winner: whoWon)
+      gameOverDelegate?.setGameOver(message: "Game over") // TODO change
     }
   }
 }
