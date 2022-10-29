@@ -9,17 +9,7 @@ final class GameBoard: BaseView,
   UICollectionViewDataSource,
   UICollectionViewDelegateFlowLayout {
 
-  private enum CurrentMoveFor {
-    case firstPlayer, secondPlayer
-  }
-
-  private let isGameWithAi: Bool
-  private let WIN_POSITIONS = [[0, 1, 2], [3, 4, 5], [6, 7, 8], [0, 3, 6], [1, 4, 7], [2, 5, 8], [0, 4, 8], [2, 4, 6]]
-  private let selectedFirstPlayerSide: SelectedSide
-  private var currentMoveFor: CurrentMoveFor = .firstPlayer
-  private var playerMoves: [Int] = [] { didSet { checkGameOverHandler() } }
-  private var secondPlayerMoves: [Int] = [] { didSet { checkGameOverHandler() } }
-  private var isGameOver = false
+  private let gameManager: GameManager
 
   // UI
   private let containerView = BaseView()
@@ -29,8 +19,12 @@ final class GameBoard: BaseView,
 
   init(mode: SelectedGameMode, side: SelectedSide) {
     gameScore = GameScore(mode: mode)
-    isGameWithAi = mode == .ai
-    selectedFirstPlayerSide = side
+    gameManager = GameManager(
+      isGameWithAi: mode == .ai,
+      selectedSide: side,
+      board: board,
+      gameScore: gameScore
+    )
 
     super.init(frame: .zero)
   }
@@ -39,203 +33,14 @@ final class GameBoard: BaseView,
     fatalError("init(coder:) has not been implemented")
   }
 
-}
-
-extension GameBoard {
-
-  private func setPlayerMove(indexPath: IndexPath) {
-    let cell = board.cellForItem(at: indexPath) as? BoardCell
-    let mark: BoardCellState = selectedFirstPlayerSide == .cross ? .cross : .nought
-    cell?.setMark(mark)
-    let moveIndex = indexPath.row + indexPath.section * 3
-    playerMoves.append(moveIndex)
-  }
-
-  private func setSecondPlayerMove(indexPath: IndexPath) {
-    let cell = board.cellForItem(at: indexPath) as? BoardCell
-    let mark: BoardCellState = selectedFirstPlayerSide == .cross ? .nought : .cross
-    cell?.setMark(mark)
-    let moveIndex = indexPath.row + indexPath.section * 3
-    secondPlayerMoves.append(moveIndex)
-  }
-
-  private func setNextMoveOptions() {
-    gameScore.changeTurn()
-    currentMoveFor = currentMoveFor == .firstPlayer ? .secondPlayer : .firstPlayer
-  }
-
-  private func getIndexPathFromInt(_ position: Int) -> IndexPath {
-    let row = position % 3
-    let section = position / 3
-    return IndexPath(row: row, section: section)
-  }
-
-  private func getAiMoveForDefense() -> Int? {
-    let composedMoves = playerMoves + secondPlayerMoves
-
-    let lastChanceMovePositions = WIN_POSITIONS
-    .filter { positions in
-      Set(positions).subtracting(Set(composedMoves)).count == 1
-    }
-
-    let winningPositions = lastChanceMovePositions
-    .first(where: { positions in
-      Set(positions).subtracting(Set(secondPlayerMoves)).count == 3
-    })
-
-    return Set(winningPositions ?? playerMoves).subtracting(Set(playerMoves)).first
-  }
-
-  private func getAiMove() -> (Bool, Int?) {
-    let availablePositions = WIN_POSITIONS.filter { positions in
-      Set(positions).subtracting(Set(playerMoves)).count == 3
-    }
-
-    let winningPositions = availablePositions
-    .first(where: { positions in
-      Set(positions).subtracting(Set(secondPlayerMoves)).count < 2
-    })
-
-    let goodPositions = availablePositions
-    .first(where: { positions in
-      Set(positions).subtracting(Set(secondPlayerMoves)).count == 2
-    })
-
-    let emptyAvailableCells = [Array(Set(WIN_POSITIONS.joined()).subtracting(Set(playerMoves + secondPlayerMoves)))]
-    let randomPositions = availablePositions.isEmpty
-                          ? emptyAvailableCells[Int.random(in: 0...emptyAvailableCells.count - 1)]
-                          : availablePositions[Int.random(in: 0...availablePositions.count - 1)]
-
-    let isWinningMove = winningPositions != nil
-    let move = Set(winningPositions ?? goodPositions ?? randomPositions).subtracting(Set(secondPlayerMoves)).first
-
-    return (isWinningMove, move)
-  }
-
-  private func onAiMove() {
-    let aiThinkingTime = Double.random(in: 0.4...1.2)
-
-    DispatchQueue.main.asyncAfter(deadline: .now() + aiThinkingTime) { [self] in
-      let composedMoves = playerMoves + secondPlayerMoves
-      setNextMoveOptions()
-
-      // check is center cell occupied
-      let isCenterCellOccupied = composedMoves.contains(where: { (move: Int) in
-        move == 4
-      })
-      if !isCenterCellOccupied {
-        setSecondPlayerMove(indexPath: getIndexPathFromInt(4))
-        return
-      }
-
-      let (isWinningMove, move) = getAiMove()
-
-      // prevent defeat
-      if !isWinningMove, let defencePosition = getAiMoveForDefense() {
-        setSecondPlayerMove(indexPath: getIndexPathFromInt(defencePosition))
-
-        return
-      }
-
-      if let move = move {
-        setSecondPlayerMove(indexPath: getIndexPathFromInt(move))
-      }
-    }
-  }
-
-  private func onFirstPlayerMove(indexPath: IndexPath) {
-    setPlayerMove(indexPath: indexPath)
-
-    let isDraw = (playerMoves + secondPlayerMoves).count == 9
-
-    if !isDraw {
-      setNextMoveOptions()
-    }
-
-    if isGameWithAi && !isDraw && !isGameOver {
-      onAiMove()
-    }
-  }
-
-  private func onSecondPlayerMove(indexPath: IndexPath) {
-    if isGameWithAi {
-      return
-    }
-
-    setSecondPlayerMove(indexPath: indexPath)
-    setNextMoveOptions()
-  }
-
   func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
     let cell = board.cellForItem(at: indexPath) as? BoardCell
 
-    guard cell?.state == .empty && !isGameOver else {
+    guard cell?.state == .empty && !gameManager.isGameOver else {
       return
     }
 
-    switch currentMoveFor {
-      case .firstPlayer:
-        onFirstPlayerMove(indexPath: indexPath)
-      case .secondPlayer:
-        onSecondPlayerMove(indexPath: indexPath)
-    }
-  }
-
-  private func restartGame() {
-    currentMoveFor = .firstPlayer
-    playerMoves = []
-    secondPlayerMoves = []
-    isGameOver = false
-    board.refreshCells()
-    gameScore.changeTurn(.firstPlayer)
-  }
-
-  private enum WhoWon {
-    case player, secondPlayer, draw
-  }
-
-  private func getAlertMessage(whoWon: WhoWon) -> String {
-    switch whoWon {
-      case .player:
-        return "You have won\nCongratulations"
-      case .secondPlayer:
-        return isGameWithAi ? "Ai have won\nGood luck in the next game!" : "Your friend have won\nCongratulations"
-      case .draw:
-        return "Draw!"
-    }
-  }
-
-  private func invokeAlert(whoWon: WhoWon) {
-    let message = getAlertMessage(whoWon: whoWon)
-    let alert = AlertManager(title: "Game Over", message: message)
-    .addActionButton(title: "Restart", style: .default) { [unowned self] _ in
-      restartGame()
-    }
-    let viewController = getCurrentViewController()
-    viewController?.present(alert, animated: true, completion: nil)
-  }
-
-  private func setNewScore(whoWon: WhoWon) {
-    let playerScore = gameScore.playerScore + (whoWon == .player ? 1 : 0)
-    let secondPlayerScore = gameScore.secondPlayerScore + (whoWon == .secondPlayer ? 1 : 0)
-    gameScore.setScore(playerScore, secondPlayerScore)
-  }
-
-  private func checkGameOverHandler() {
-    let isPlayerWon = WIN_POSITIONS.first { positions in
-      Set(positions).subtracting(Set(playerMoves)).isEmpty
-    } != nil
-    let isSecondPlayerWon = WIN_POSITIONS.first { positions in
-      Set(positions).subtracting(Set(secondPlayerMoves)).isEmpty
-    } != nil
-    let isDraw = (playerMoves + secondPlayerMoves).count == 9
-
-    if (isPlayerWon || isSecondPlayerWon || isDraw) && !isGameOver {
-      isGameOver = true
-      let whoWon: WhoWon = isPlayerWon ? .player : isSecondPlayerWon ? .secondPlayer : .draw
-      invokeAlert(whoWon: whoWon)
-      setNewScore(whoWon: whoWon)
-    }
+    gameManager.cellPressed(indexPath: indexPath)
   }
 
 }

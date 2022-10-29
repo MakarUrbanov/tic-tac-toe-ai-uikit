@@ -4,24 +4,42 @@
 
 import UIKit
 
+protocol PlayersMovesProtocol: AnyObject {
+  var playerMoves: [Int] { get set }
+  var aiMoves: [Int] { get set }
+}
+
 final class AIOfGame {
 
-  private let gameProbability = AIGameProbability(initialDifficulty: .easy)
-  private let playersMoves = AIPlayersMoves()
+  private(set) var WIN_POSITIONS = [
+    [0, 1, 2],
+    [3, 4, 5],
+    [6, 7, 8],
+    [0, 3, 6],
+    [1, 4, 7],
+    [2, 5, 8],
+    [0, 4, 8],
+    [2, 4, 6]
+  ]
 
-  func getAiNextMove() -> Int {
+  private let gameProbability = AIGameProbability(initialDifficulty: .easy)
+
+  weak var playersMovesDelegate: PlayersMovesProtocol?
+  var playerMoves: [Int] { playersMovesDelegate?.playerMoves ?? [] }
+  var aiMoves: [Int] { playersMovesDelegate?.aiMoves ?? [] }
+  var composedMoves: [Int] { aiMoves + playerMoves }
+
+  func getAiNextMove(completion: @escaping (Int) -> Void) {
     let aiThinkingTime = Double.random(in: 0.4...1.2)
 
     DispatchQueue.main.asyncAfter(deadline: .now() + aiThinkingTime) { [self] in
-      let composedMoves = playersMoves.opponentMoves + playersMoves.aiMoves
-
       // check is center cell occupied
       let centerCellIndex = 4
       let isCenterCellOccupied = composedMoves.contains { $0 == centerCellIndex }
 
       let isNeedTakeCenterCell = gameProbability.checkIsNeedAggressiveAttack()
       if !isCenterCellOccupied && isNeedTakeCenterCell {
-        return 4
+        completion(centerCellIndex)
       }
 
       let (isWinningMove, move) = getAiMove()
@@ -29,17 +47,13 @@ final class AIOfGame {
       // prevent defeat
       let isNeedDefense = gameProbability.checkIsNeedSmartDefense()
       if !isWinningMove, isNeedDefense, let defencePosition = getAiMoveForDefense() {
-        return defencePosition
+        completion(defencePosition)
       }
 
       if let move = move {
-        return move
+        completion(move)
       }
     }
-  }
-
-  func restartGame() {
-    playersMoves.refreshMoves()
   }
 
   func aiHasWon() {
@@ -50,36 +64,28 @@ final class AIOfGame {
     gameProbability.opponentHasWon()
   }
 
-  func setAiMove(cellNumber: Int) {
-    playersMoves.setAIMove(cellIndex: cellNumber)
-  }
-
-  func setPlayerMove(cellNumber: Int) {
-    playersMoves.setOpponentMove(cellIndex: cellNumber)
-  }
-
 }
 
 extension AIOfGame {
 
   private func getAiMove() -> (Bool, Int?) {
-    let availablePositions = playersMoves.WIN_POSITIONS.filter { positions in
-      Set(positions).subtracting(Set(playersMoves.opponentMoves)).count == 3
+    let availablePositions = WIN_POSITIONS.filter { positions in
+      Set(positions).subtracting(Set(playerMoves)).count == 3
     }
 
     let winningPositions = availablePositions
     .first(where: { positions in
-      Set(positions).subtracting(Set(playersMoves.aiMoves)).count < 2
+      Set(positions).subtracting(Set(aiMoves)).count < 2
     })
 
     let goodPositions = availablePositions
     .first(where: { positions in
-      Set(positions).subtracting(Set(playersMoves.aiMoves)).count == 2
+      Set(positions).subtracting(Set(aiMoves)).count == 2
     })
 
     let emptyAvailableCells = [
       Array(
-        Set(playersMoves.WIN_POSITIONS.joined()).subtracting(Set(playersMoves.opponentMoves + playersMoves.aiMoves))
+        Set(WIN_POSITIONS.joined()).subtracting(Set(playerMoves + aiMoves))
       )
     ]
     let randomPositions = availablePositions.isEmpty
@@ -87,23 +93,21 @@ extension AIOfGame {
                           : availablePositions[Int.random(in: 0...availablePositions.count - 1)]
 
     let isWinningMove = winningPositions != nil
-    let move = Set(winningPositions ?? goodPositions ?? randomPositions).subtracting(Set(playersMoves.aiMoves)).first
+    let move = Set(winningPositions ?? goodPositions ?? randomPositions).subtracting(Set(aiMoves)).first
 
     return (isWinningMove, move)
   }
 
   private func getAiMoveForDefense() -> Int? {
-    let composedMoves = playersMoves.aiMoves + playersMoves.opponentMoves
-
-    let lastChanceMovePositions = playersMoves.WIN_POSITIONS.filter { positions in
+    let lastChanceMovePositions = WIN_POSITIONS.filter { positions in
       Set(positions).subtracting(Set(composedMoves)).count == 1
     }
 
     let winningPositions = lastChanceMovePositions.first(where: { positions in
-      Set(positions).subtracting(Set(playersMoves.aiMoves)).count == 3
+      Set(positions).subtracting(Set(aiMoves)).count == 3
     })
 
-    return Set(winningPositions ?? playersMoves.opponentMoves).subtracting(Set(playersMoves.opponentMoves)).first
+    return Set(winningPositions ?? playerMoves).subtracting(Set(playerMoves)).first
   }
 
 }
