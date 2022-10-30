@@ -81,7 +81,6 @@ extension GameManager { // MOVES
     setPlayerMove(indexPath: indexPath)
 
     let isDraw = gameAi.composedMoves.count == 9
-
     if !isDraw {
       setNextMoveOptions()
     }
@@ -110,6 +109,28 @@ extension GameManager { // ON GAME OVER
     gameScore.setScore(playerScore, secondPlayerScore)
   }
 
+  private func setWinnerForAi(winner: Winner) {
+    switch winner {
+      case .player:
+        gameAi.playerHasWon()
+      case .secondPlayer:
+        gameAi.aiHasWon()
+      case .draw:
+        return
+    }
+  }
+
+  private func getGameOverMessage(winner: Winner) -> String {
+    switch winner {
+      case .player:
+        return "You have won"
+      case .secondPlayer:
+        return isGameWithAi ? "Ai have won" : "Your friend have won"
+      case .draw:
+        return "Draw"
+    }
+  }
+
   private func checkGameOverHandler() {
     let winner = GameManager_utils.checkWhoWon(
       WIN_POSITIONS: gameAi.WIN_POSITIONS,
@@ -117,10 +138,11 @@ extension GameManager { // ON GAME OVER
       aiMoves: aiMoves
     )
 
-    if !isGameOver, let whoWon = winner {
+    if !isGameOver, let winner = winner {
       isGameOver = true
-      setNewScore(winner: whoWon)
-      gameOverDelegate?.setGameOver(message: "Game over") // TODO change
+      setNewScore(winner: winner)
+      setWinnerForAi(winner: winner)
+      gameOverDelegate?.setGameOver(message: getGameOverMessage(winner: winner))
     }
   }
 }

@@ -40,6 +40,7 @@ final class AIOfGame {
       let isNeedTakeCenterCell = gameProbability.checkIsNeedAggressiveAttack()
       if !isCenterCellOccupied && isNeedTakeCenterCell {
         completion(centerCellIndex)
+        return
       }
 
       let (isWinningMove, move) = getAiMove()
@@ -48,10 +49,12 @@ final class AIOfGame {
       let isNeedDefense = gameProbability.checkIsNeedSmartDefense()
       if !isWinningMove, isNeedDefense, let defencePosition = getAiMoveForDefense() {
         completion(defencePosition)
+        return
       }
 
       if let move = move {
         completion(move)
+        return
       }
     }
   }

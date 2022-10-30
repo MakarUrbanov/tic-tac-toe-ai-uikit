@@ -16,7 +16,7 @@ class AIGameProbability {
   private var winsOfOpponent: Int = 0
 
   private let initialDifficulty: InitialProbability
-  private var probability: Double {
+  var probability: Double {
     Double.minimum(initialDifficulty.rawValue + getProbabilityMultiplier(), 1)
   }
 
