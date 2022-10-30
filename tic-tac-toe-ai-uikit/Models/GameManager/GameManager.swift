@@ -11,9 +11,11 @@ protocol GameOverProtocol: AnyObject {
 final class GameManager: PlayersMovesProtocol {
   private let gameAi = AIOfGame()
   private let selectedFirstPlayerSide: SelectedSide
-  private var currentMoveFor: CurrentMoveFor = .firstPlayer
   private let board: Board
   private let gameScore: GameScore
+
+  private var firstMoveFor: CurrentMoveFor = .firstPlayer
+  private var currentMoveFor: CurrentMoveFor = .firstPlayer
 
   var playerMoves: [Int] = [] { didSet { checkGameOverHandler() } }
   var aiMoves: [Int] = [] { didSet { checkGameOverHandler() } }
@@ -46,12 +48,20 @@ final class GameManager: PlayersMovesProtocol {
   }
 
   func restartGame() {
-    currentMoveFor = .firstPlayer
     playerMoves = []
     aiMoves = []
     isGameOver = false
     board.refreshCells()
-    gameScore.changeTurn(.firstPlayer)
+    firstMoveFor = firstMoveFor == .firstPlayer ? .secondPlayer : .firstPlayer
+    currentMoveFor = firstMoveFor
+    gameScore.changeTurn(firstMoveFor)
+
+    let isAiCurrentTurn = isGameWithAi && (firstMoveFor == .secondPlayer)
+    if isAiCurrentTurn {
+      gameAi.getAiNextMove { [self] nextMove in
+        setAiMove(nextMove: nextMove)
+      }
+    }
   }
 
 }
@@ -62,6 +72,7 @@ extension GameManager { // MOVES
     let mark: BoardCellState = selectedFirstPlayerSide == .cross ? .cross : .nought
     cell?.setMark(mark)
     playerMoves.append(GameManager_utils.getMoveIntFromIndexPath(indexPath))
+    setNextMoveOptions()
   }
 
   private func setSecondPlayerMove(indexPath: IndexPath) {
@@ -69,23 +80,18 @@ extension GameManager { // MOVES
     let mark: BoardCellState = selectedFirstPlayerSide == .cross ? .nought : .cross
     cell?.setMark(mark)
     aiMoves.append(GameManager_utils.getMoveIntFromIndexPath(indexPath))
+    setNextMoveOptions()
   }
 
   private func setAiMove(nextMove: Int) {
     let indexPath = GameManager_utils.getIndexPathFromInt(nextMove)
     setSecondPlayerMove(indexPath: indexPath)
-    setNextMoveOptions()
   }
 
   private func onFirstPlayerMove(indexPath: IndexPath) {
     setPlayerMove(indexPath: indexPath)
 
-    let isDraw = gameAi.composedMoves.count == 9
-    if !isDraw {
-      setNextMoveOptions()
-    }
-
-    if isGameWithAi && !isDraw && !isGameOver {
+    if isGameWithAi && !isGameOver {
       gameAi.getAiNextMove { [self] nextMove in
         setAiMove(nextMove: nextMove)
       }
@@ -98,7 +104,6 @@ extension GameManager { // MOVES
     }
 
     setSecondPlayerMove(indexPath: indexPath)
-    setNextMoveOptions()
   }
 }
 
@@ -131,6 +136,13 @@ extension GameManager { // ON GAME OVER
     }
   }
 
+  private func setGameOverOptions(winner: Winner) {
+    isGameOver = true
+    setNewScore(winner: winner)
+    setWinnerForAi(winner: winner)
+    gameOverDelegate?.setGameOver(message: getGameOverMessage(winner: winner))
+  }
+
   private func checkGameOverHandler() {
     let winner = GameManager_utils.checkWhoWon(
       WIN_POSITIONS: gameAi.WIN_POSITIONS,
@@ -139,10 +151,7 @@ extension GameManager { // ON GAME OVER
     )
 
     if !isGameOver, let winner = winner {
-      isGameOver = true
-      setNewScore(winner: winner)
-      setWinnerForAi(winner: winner)
-      gameOverDelegate?.setGameOver(message: getGameOverMessage(winner: winner))
+      setGameOverOptions(winner: winner)
     }
   }
 }

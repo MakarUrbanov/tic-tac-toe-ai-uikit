@@ -60,6 +60,10 @@ extension BoardCell {
   }
 
   func setMark(_ mark: BoardCellState) {
+    if state != .empty {
+      return
+    }
+
     switch mark {
       case .cross:
         drawMark(Cross.self)

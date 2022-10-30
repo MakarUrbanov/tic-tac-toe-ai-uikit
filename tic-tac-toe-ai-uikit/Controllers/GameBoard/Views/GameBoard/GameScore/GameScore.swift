@@ -69,12 +69,8 @@ extension GameScore {
     secondPlayerScore = secondsPlayer
   }
 
-  enum WhoseTurn {
-    case firstPlayer, secondsPlayer
-  }
-
-  func changeTurn(_ whosoTurn: WhoseTurn? = nil) {
-    let isSecondPlayerMove = whosoTurn != nil ? whosoTurn == .secondsPlayer : selectorLine.transform.tx == 0
+  func changeTurn(_ whosoTurn: CurrentMoveFor? = nil) {
+    let isSecondPlayerMove = whosoTurn != nil ? whosoTurn == .secondPlayer : selectorLine.transform.tx == 0
     let yTranslate = isSecondPlayerMove ? secondPlayerName.frame.maxX - playerName.bounds.width : 0
 
     UIView.animate(
